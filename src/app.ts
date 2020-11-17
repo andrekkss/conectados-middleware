@@ -1,21 +1,16 @@
 // @ts-ignore
 import express from 'express';
-import proxy from 'http-proxy-middleware';
-import logger from 'morgan';
+// @ts-ignore
+import { createProxyMiddleware, Filter, Options, RequestHandler } from 'http-proxy-middleware';
 // @ts-ignore
 import cookie from 'cookie-parser';
-import helmet from 'helmet';
 
 const app = express();
 
-const userServiceProxy = proxy({ target: 'http://conectados-post:3001/api/v1/posts', changeOrigin: true });
+const postServiceProxy = createProxyMiddleware({ target: 'http://conectados-post:3001/api/v1/', changeOrigin: true });
+const userServiceProxy = createProxyMiddleware({ target: 'http://conectados-client:3002/api/v1/', changeOrigin: true });
 
-app.use(logger('dev'));
-app.use(helmet());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookie());
+app.use('/posts', postServiceProxy);
+app.use('/client', userServiceProxy);
 
-app.use('/', userServiceProxy);
-
-app.listen(3000, '0.0.0.0');
+app.listen(3000);
